@@ -1,0 +1,154 @@
+!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pan Clicker Simple</title>
+    <!-- Carga de Tailwind CSS para un diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // Fuente Inter para una apariencia limpia
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilo base */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Animación de feedback al hacer clic */
+        @keyframes click-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15) rotate(3deg); }
+            100% { transform: scale(1); }
+        }
+        .animate-click-pop {
+            animation: click-pop 0.15s ease-out;
+        }
+        /* Estilo para el punto flotante */
+        .point-float {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #d97706; /* amber-600 para que se vea como pan */
+            pointer-events: none; /* Asegura que no bloquee el clic */
+            opacity: 0;
+            transform: translateY(0) scale(1);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .point-float.active {
+            opacity: 1;
+            transform: translateY(-80px) scale(0.8);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Contenedor principal de la aplicación -->
+    <div id="app" class="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 md:p-10 text-center border-t-8 border-amber-500 relative overflow-hidden">
+        
+        <!-- Título y subtítulo -->
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-2">
+            ¡El Clicker del Pan!
+        </h1>
+        <p class="text-md text-gray-500 mb-8">
+            ¡Pulsa el pan para hornear más puntos!
+        </p>
+
+        <!-- Área de puntuación -->
+        <div class="bg-amber-100 p-4 rounded-xl shadow-lg border-b-4 border-amber-400 mb-10">
+            <p class="text-xl font-medium text-amber-800">
+                Puntuación de Horneado: 
+                <span id="score-display" class="text-5xl font-bold text-amber-900 ml-2 block mt-1">0</span>
+            </p>
+        </div>
+
+        <!-- Área del Pan (interactiva) -->
+        <div id="pan-area" 
+             class="relative inline-block" 
+             onclick="handleClick(event)">
+            <span id="pan-emoji"
+                  class="text-[150px] cursor-pointer transform transition duration-100 block hover:scale-105 active:scale-95 select-none"
+                  role="img" aria-label="Pan">
+                🍞
+            </span>
+        </div>
+
+    </div>
+
+    <script>
+        // Variables de estado del juego
+        let score = 0;
+        const scoreDisplay = document.getElementById('score-display');
+        const panEmoji = document.getElementById('pan-emoji');
+        const panArea = document.getElementById('pan-area');
+
+        /**
+         * Actualiza el contador de puntuación en la pantalla.
+         */
+        function updateScoreDisplay() {
+            scoreDisplay.textContent = score;
+        }
+
+        /**
+         * Crea una animación flotante de "+1" al hacer clic.
+         * @param {Event} event - El evento de clic.
+         */
+        function createFloatingPoint(event) {
+            // Crea el elemento flotante
+            const pointElement = document.createElement('div');
+            pointElement.textContent = '+1';
+            pointElement.classList.add('point-float');
+
+            // Posiciona el elemento relativo al punto de clic
+            const rect = panArea.getBoundingClientRect();
+            
+            // Calculamos la posición centrada sobre el pan
+            pointElement.style.left = `${rect.width / 2}px`;
+            pointElement.style.top = `${rect.height / 2}px`;
+            
+            panArea.appendChild(pointElement);
+
+            // Activamos la animación y la clase flotante
+            setTimeout(() => {
+                pointElement.classList.add('active');
+            }, 10);
+
+            // Elimina el elemento después de que termine la animación
+            setTimeout(() => {
+                panArea.removeChild(pointElement);
+            }, 600); 
+        }
+
+        /**
+         * Maneja el evento de clic en el pan.
+         * @param {Event} event - El evento de clic.
+         */
+        function handleClick(event) {
+            score++;
+            
+            // Animación de 'pop' en el emoji
+            panEmoji.classList.remove('animate-click-pop');
+            // Forzamos un reflow para reiniciar la animación
+            void panEmoji.offsetWidth; 
+            panEmoji.classList.add('animate-click-pop');
+
+            updateScoreDisplay();
+            createFloatingPoint(event);
+        }
+
+        /**
+         * Inicializa la aplicación al cargar la ventana.
+         */
+        window.onload = updateScoreDisplay;
+
+    </script>
+</body>
+</html>
